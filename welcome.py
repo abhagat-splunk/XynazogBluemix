@@ -14,7 +14,7 @@
 
 import os
 from flask import Flask, jsonify
-
+from app import app,server
 app = Flask(__name__)
 
 @app.route('/')
@@ -43,5 +43,5 @@ def SayHello(name):
 port = os.getenv('PORT', '5000')
 if __name__ == "__main__":
 	print "Redis Service Starting..."
-    #server.inititalize_redis()
+    server.inititalize_redis()
 	app.run(host='0.0.0.0', port=int(port))
