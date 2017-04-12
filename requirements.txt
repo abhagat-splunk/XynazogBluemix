@@ -11,3 +11,4 @@ expects==0.8.0
 #Codecoverage
 coverage==4.2
 codecov==2.0.5
+redis==2.10.5
