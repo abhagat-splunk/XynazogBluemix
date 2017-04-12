@@ -14,6 +14,106 @@ redis = None
 
 
 
+######################################################################
+# GET INDEX
+######################################################################
+@app.route('/')
+def index():
+    # data = '{name: <string>, category: <string>}'
+    # url = request.base_url + 'pets' # url_for('list_pets')
+    # return jsonify(name='Pet Demo REST API Service', version='1.0', url=url, data=data), status.HTTP_200_OK
+    return app.send_static_file('index.html')
+
+######################################################################
+# LIST ALL PETS
+######################################################################
+@app.route('/pets', methods=['GET'])
+def list_pets():
+    pets = []
+    category = request.args.get('category')
+    if category:
+        pets = Pet.find_by_category(category)
+    else:
+        pets = Pet.all()
+
+    results = [pet.serialize() for pet in pets]
+    return make_response(jsonify(results), status.HTTP_200_OK)
+
+######################################################################
+# RETRIEVE A PET
+######################################################################
+@app.route('/pets/<int:id>', methods=['GET'])
+def get_pets(id):
+    pet = Pet.find_or_404(id)
+    return make_response(jsonify(pet.serialize()), status.HTTP_200_OK)
+
+######################################################################
+# ADD A NEW PET
+######################################################################
+@app.route('/pets', methods=['POST'])
+def create_pets():
+    # Check for form submission data
+    print 'Headers: {}'.format(request.headers.get('Content-Type'))
+    data = {}
+    if request.headers.get('Content-Type') == 'application/x-www-form-urlencoded':
+        data = {'name': request.form['name'], 'category': request.form['category']}
+    else:
+        data = request.get_json()
+    pet = Pet()
+    pet.deserialize(data)
+    pet.save()
+    message = pet.serialize()
+    return make_response(jsonify(message), status.HTTP_201_CREATED, {'Location': pet.self_url() })
+
+######################################################################
+# UPDATE AN EXISTING PET
+######################################################################
+@app.route('/pets/<int:id>', methods=['PUT'])
+def update_pets(id):
+    pet = Pet.find_or_404(id)
+    pet.deserialize(request.get_json())
+    pet.save()
+    return make_response(jsonify(pet.serialize()), status.HTTP_200_OK)
+
+######################################################################
+# DELETE A PET
+######################################################################
+@app.route('/pets/<int:id>', methods=['DELETE'])
+def delete_pets(id):
+    pet = Pet.find(id)
+    if pet:
+        pet.delete()
+    return make_response('', status.HTTP_204_NO_CONTENT)
+
+
+######################################################################
+#  U T I L I T Y   F U N C T I O N S
+######################################################################
+# load sample data
+def data_load(data):
+    Pet().deserialize(data).save()
+
+# empty the database
+def data_reset():
+    redis.flushall()
+
+@app.before_first_request
+def setup_logging():
+    if not app.debug:
+        # In production mode, add log handler to sys.stderr.
+        handler = logging.StreamHandler()
+        handler.setLevel(app.config['LOGGING_LEVEL'])
+        # formatter = logging.Formatter(app.config['LOGGING_FORMAT'])
+        #'%Y-%m-%d %H:%M:%S'
+        formatter = logging.Formatter('[%(asctime)s] - %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
+        handler.setFormatter(formatter)
+        app.logger.addHandler(handler)
+
+######################################################################
+# Connect to Redis and catch connection exceptions
+######################################################################
+
+
 def connect_to_redis(hostname, port, password):
     redis = Redis(host=hostname, port=port, password=password)
     try:
