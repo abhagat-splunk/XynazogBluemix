@@ -12,6 +12,16 @@ global redis
 redis = None
 
 
+
+def connect_to_redis(hostname, port, password):
+    redis = Redis(host=hostname, port=port, password=password)
+    try:
+        redis.ping()
+    except ConnectionError:
+        redis = None
+    return redis
+
+
 def inititalize_redis():
     global redis
     redis = None
@@ -22,7 +32,7 @@ def inititalize_redis():
         services = json.loads(VCAP_SERVICES)
         creds = services['rediscloud'][0]['credentials']
         app.logger.info("Conecting to Redis on host %s port %s" % (creds['hostname'], creds['port']))
-        redis = redis.connect_to_redis(creds['hostname'], creds['port'], creds['password'])
+        redis = connect_to_redis(creds['hostname'], creds['port'], creds['password'])
     else:
         app.logger.info("VCAP_SERVICES not found, checking localhost for Redis")
         redis = connect_to_redis('127.0.0.1', 6379, None)
