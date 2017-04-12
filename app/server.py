@@ -6,6 +6,7 @@ from flask import Flask, Response, jsonify, request, json, url_for, make_respons
 from flask_api import status    # HTTP Status Codes
 from werkzeug.exceptions import NotFound
 from . import app
+from models import Pet
 
 import error_handlers
 global redis
@@ -43,4 +44,4 @@ def inititalize_redis():
         # if you end up here, redis instance is down.
         app.logger.error('*** FATAL ERROR: Could not connect to the Redis Service')
     # Have the Pet model use Redis
-    
+    Pet.use_db(redis)
