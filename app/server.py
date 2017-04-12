@@ -43,4 +43,4 @@ def inititalize_redis():
         # if you end up here, redis instance is down.
         app.logger.error('*** FATAL ERROR: Could not connect to the Redis Service')
     # Have the Pet model use Redis
-    Pet.use_db(redis)
+    
