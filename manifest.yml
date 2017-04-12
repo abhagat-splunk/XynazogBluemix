@@ -1,0 +1,11 @@
+applications:
+- path: .
+  memory: 128M
+  instances: 1
+  domain: mybluemix.net
+  name: xynazog
+  host: xynazog
+  disk_quota: 1024M
+  services:
+  - Redis Cloud-g1
+  buildpack: python_buildpack
